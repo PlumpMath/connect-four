@@ -21,9 +21,14 @@
   (defroute "/" []
     (re-frame/dispatch [:set-active-panel :home-panel]))
 
+  (defroute "/rooms" []
+    (re-frame/dispatch [:set-active-panel :rooms-panel]))
+
+  (defroute "/game" []
+    (re-frame/dispatch [:set-active-panel :game-panel]))
+
   (defroute "/about" []
     (re-frame/dispatch [:set-active-panel :about-panel]))
-
 
   ;; --------------------
   (hook-browser-navigation!))

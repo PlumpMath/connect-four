@@ -6,14 +6,17 @@
                  [org.clojars.stumitchell/clairvoyant "0.2.0"]
                  [day8/re-frame-tracer "0.1.0-SNAPSHOT"]
                  [re-com "0.7.0"]
+                 [binaryage/devtools "0.5.2"]
                  [com.cemerick/piggieback "0.2.1"]
                  [figwheel-sidecar "0.5.0-1"]
+                 [matchbox "0.0.8-SNAPSHOT"]
+                 [prismatic/schema "1.0.5"]
                  [secretary "1.2.3"]
                  [garden "1.3.0"]]
 
   :min-lein-version "2.5.3"
   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-  :source-paths ["src/clj"]
+  :source-paths ["src/clj" "src/cljs" "dev"]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.0-2"]

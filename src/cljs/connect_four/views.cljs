@@ -5,18 +5,17 @@
    [clairvoyant.core :as c]
    [re-frame-tracer.core :refer [tracer]]
    [re-frame.core :as re-frame]
-    [re-com.core :as re-com]))
+   [re-com.core :as re-com]))
 
 ;; home
 
 
 (enable-console-print!)
-(defn home-title []
-  (let [name (re-frame/subscribe [:name])]
+(defn game-title []
     (fn []
       [re-com/title
        :label (str "Awesome Connect Four game")
-       :level :level1])))
+       :level :level1]))
 
 (def slot-color
   {:empty "white"
@@ -34,8 +33,7 @@
             point-str (str (/ size 2))]
         [re-com/box
          :child [:div {:id "first"
-                       :on-click #(re-frame/dispatch [:maybe-play row col])
-                       }
+                       :on-click #(re-frame/dispatch [:maybe-play row col])}
                  [:svg {:width size-str :height size-str}
                   [:circle {:cx point-str
                             :cy point-str
@@ -75,21 +73,38 @@
         [re-com/label :label (str "Currnet Player " @player)]
         [re-com/label :label (str "Currnet Turn " @turn)]
         [re-com/label :label (str "Winner " @winner)]
-        [re-com/label :label (str @error)]
-        ]
-       ]))
+        [re-com/label :label (str @error)]]]))
   )
 
-(defn home-panel []
+(defn game-panel []
   [re-com/v-box
    :gap "1em"
-   :children [[home-title]
+   :children [[game-title]
               [re-com/h-box
                :gap "5em"
                :children [ 
                           [board]
                           [game-data]]]]])
 
+(defn rooms-link []
+  [re-com/hyperlink-href
+   :label "go to rooms"
+   :href "#/rooms"])
+
+(defn game-link []
+  [re-com/hyperlink-href
+   :label "go to game"
+   :href "#/game"])
+
+
+
+(defn home-panel []
+  [re-com/v-box
+   :gap "1em"
+   :children [[game-title]
+              [rooms-link]
+              [game-link]
+              ]])
 
 
 ;; about
@@ -115,6 +130,8 @@
 (defmulti panels identity)
 (defmethod panels :home-panel [] [home-panel])
 (defmethod panels :about-panel [] [about-panel])
+(defmethod panels :game-panel [] [game-panel])
+(defmethod panels :rooms-panel [] [about-panel])
 (defmethod panels :default [] [:div])
 
 (defn main-panel []
