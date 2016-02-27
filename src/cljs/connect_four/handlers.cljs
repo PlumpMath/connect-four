@@ -9,7 +9,6 @@
    [connect-four.game :as game]
    [connect-four.db :as db]))
 
-
 (defn check-and-throw
   "throw an exception is something does not match the
   schema"
@@ -19,7 +18,7 @@
 
 (defn push-game-state
   [ref game]
-  (m/reset-in! ref [:rooms "0" :game] game))
+  (m/reset-in! ref [:rooms (:id game) :game] game))
 
 (def push-middleware
   (re-frame/after (partial push-game-state db/rooms)))
@@ -38,27 +37,55 @@
  check-middleware
  (fn  [_ _]
    (re-frame/dispatch [:connect-firebase])
-   (re-frame/dispatch [:join-game 0])
+   (re-frame/dispatch [:watch-rooms])
    db/default-db))
 
 (re-frame/register-handler
  :connect-firebase
  check-middleware
  (fn [db [_ id]]
-   (m/auth-anon db/rooms)))
+   (m/auth-info db/rooms)
+   db
+   ))
 
 (re-frame/register-handler
  :join-game
- check-middleware
+ [check-middleware]
  (fn [db [_ id]]
+   (-> db/rooms
+       (m/merge-in! [ :rooms (keyword  id) :players ]  [  (get-in db [:user-id])]))
+   (let [ disconn 
+         (-> db/rooms
+             (m/get-in [:rooms (keyword  id) :game])
+             (m/listen-to :value
+                          (fn [[_ new]]
+                            (.log js/console  new  )
+                            (re-frame/dispatch [:update-game new]))))])
+   (assoc-in db [:game-id] id)))
+
+(re-frame/register-handler
+ :watch-rooms
+ check-middleware
+ (fn [db [_ ]]
    (let [disconn
          (-> db/rooms
-             (m/get-in [:rooms (str id) :game])
+             (m/get-in [:rooms])
              (m/listen-to :value
-           (fn [[_ new]]
-             (.log js/console  new  )
-             (re-frame/dispatch [:update-game new]))))])
-   (assoc-in db [:game-id] id)))
+                          (fn [[_ new]]
+                            (re-frame/dispatch [:update-rooms new]))))])
+   db))
+
+
+(re-frame/register-handler
+ :create-room
+ check-middleware
+ (fn [db [_ name]]
+   (let [new-game {:name name
+                   :id (str (count (:rooms db)))
+                   :game (db/empty-game (str (count (:rooms db)) ))}]
+     (-> db/rooms
+         (m/reset-in! [:rooms (:id new-game)] new-game))
+     db)))
 
 (re-frame/register-handler
  :set-active-panel
@@ -72,7 +99,7 @@
    (let [play-status (game/valid-play? (:board game)
                                   [row col])]
      (if (and  (= play-status :ok)
-               (empty? (:winner game)))
+               (nil? (:winner game)))
        (do
          (re-frame/dispatch [:play row col])
          game)
@@ -85,14 +112,34 @@
 
 (re-frame/register-handler
  :update-game
- check-middleware
+ [check-middleware]
  (fn [db [_ new]]
    (update-in db [:game]  #(merge % new))))
 
 (re-frame/register-handler
+ :update-user-id
+ check-middleware
+ (fn [db [_ new]]
+   (assoc-in db [:user-id] new )))
+
+
+(re-frame/register-handler
+ :update-rooms
+ [ check-middleware]
+ (fn [db [_ new]]
+   (let [munged  (reduce
+                  (fn [acc r]
+                    (assoc acc (str  (:id r)) r))
+                  {}
+                  new)] 
+     (.log js/console (assoc  db :rooms munged))
+     (assoc-in db [:rooms] munged))))
+
+
+(re-frame/register-handler
  :play
- game-middleware
- (fn [game [row col]]
+ [re-frame/debug  game-middleware]
+ (fn [game [row  col]]
    (re-frame/dispatch [:switch-slot row col])
    (re-frame/dispatch [:end-turn])
     game))
@@ -108,8 +155,7 @@
                    (game/next-player
                     (:player game)))
          (assoc-in [:error] "")
-         (update-in [:turn] inc)
-         ))))
+         (update-in [:turn] inc)))))
 
 
 (re-frame/register-handler

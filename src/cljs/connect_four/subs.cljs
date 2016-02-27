@@ -23,9 +23,36 @@
 (defn error-query [db ]
   (reaction (get-in @db [:game :error])))
 
+(defn room-query [db [_ id]]
+  (reaction (get-in @db [:rooms id])))
+
+(defn rooms-query [db ]
+  (reaction (get-in @db [:rooms])))
+
+
+
+(defn user-id-query [db [_ id]]
+  (reaction (get-in @db [:user-id])))
+
+
 (re-frame/register-sub
  :board
  board-query)
+
+(re-frame/register-sub
+ :room
+ room-query)
+
+
+(re-frame/register-sub
+ :rooms
+ rooms-query)
+
+
+(re-frame/register-sub
+ :user-id
+ user-id-query)
+
 
 (re-frame/register-sub
  :winner

@@ -19,26 +19,26 @@
 (s/defschema GameState
   {:turn s/Int
    :error s/Str
-   :id   s/Int
+   :id   s/Str
    :player (s/enum :red :blue)
    (s/optional-key :winner) (s/enum :red :blue)
    :board Board})
 
 (s/defschema Room
   {:name s/Str
-   :id   s/Int
+   :id   s/Str
    :game GameState
-   :players [s/Str]})
+   (s/optional-key  :players) [s/Str]})
 
 (s/defschema RoomsState
-  {:rooms  {s/Int  Room}})
+  {s/Str Room})
 
 (s/defschema AppState
   {(s/optional-key  :game) GameState
-   :active-panel (s/enum :roomes-panel :game-panel
+   :active-panel (s/enum :rooms-panel :game-panel
                          :home-panel :about-panel)
-   (s/optional-key  :game-id) s/Int
-;   :rooms RoomsState
+   (s/optional-key  :game-id) s/Str
+   (s/optional-key  :rooms) RoomsState
    :user-id s/Str})
 
 (s/defn a-row [] :- [Slot]
@@ -47,10 +47,10 @@
 (s/defn a-board [] :- Board
   (into [] (take 6 (repeat (a-row )))))
 
-(s/defn empty-game [] :- GameState
+(s/defn empty-game [id :- s/Str] :- GameState
   {:player :blue
    :turn 0
-   :id 0
+   :id id
    :error ""
    :board (a-board)})
 
@@ -59,8 +59,8 @@
    :user-id "Test"})
 
 (s/def default-rooms :- RoomsState
-  {:rooms {0
+  {:rooms {"0"
            {:name "a Room"
-            :id  0
-            :game (empty-game)
+            :id  "0"
+            :game (empty-game "0")
             :players ["you" "me"]}}})

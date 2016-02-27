@@ -12,6 +12,8 @@
                  [matchbox "0.0.8-SNAPSHOT"]
                  [prismatic/schema "1.0.5"]
                  [secretary "1.2.3"]
+                 [bidi "2.0.0"]
+                 [venantius/accountant "0.1.7"]
                  [garden "1.3.0"]]
 
   :min-lein-version "2.5.3"

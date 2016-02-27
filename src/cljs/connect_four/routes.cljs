@@ -4,31 +4,30 @@
     (:require [secretary.core :as secretary]
               [goog.events :as events]
               [goog.history.EventType :as EventType]
+              [accountant.core :as accountant]
               [re-frame.core :as re-frame]))
 
-(defn hook-browser-navigation! []
-  (doto (History.)
-    (events/listen
-     EventType/NAVIGATE
-     (fn [event]
-       (secretary/dispatch! (.-token event))))
-    (.setEnabled true)))
 
-(defn app-routes []
-  (secretary/set-config! :prefix "#")
-  ;; --------------------
-  ;; define routes here
-  (defroute "/" []
-    (re-frame/dispatch [:set-active-panel :home-panel]))
+(def routes
+  ["/"  {"" :home-panel
+      "rooms" :rooms-panel
+      ["game/" :game-id] :game-panel
+      "about" :about-panel}])
 
-  (defroute "/rooms" []
-    (re-frame/dispatch [:set-active-panel :rooms-panel]))
+(defmulti handle :handler)
 
-  (defroute "/game" []
-    (re-frame/dispatch [:set-active-panel :game-panel]))
+(defmethod handle :home-panel []
+  (re-frame/dispatch [:set-active-panel :home-panel]))
 
-  (defroute "/about" []
-    (re-frame/dispatch [:set-active-panel :about-panel]))
+(defmethod handle :rooms-panel []
+  (re-frame/dispatch [:set-active-panel :rooms-panel]))
 
-  ;; --------------------
-  (hook-browser-navigation!))
+(defmethod handle :game-panel [{:keys [route-params] :as all}]
+  (.log js/console all)
+  (re-frame/dispatch [:set-active-panel :game-panel])
+  (re-frame/dispatch [:join-game (:game-id route-params)]))
+
+(defmethod handle :about-panel []
+  (re-frame/dispatch [:set-active-panel :about-panel]))
+
+
