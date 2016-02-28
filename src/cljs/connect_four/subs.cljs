@@ -23,6 +23,10 @@
 (defn error-query [db ]
   (reaction (get-in @db [:game :error])))
 
+(defn game-id-query [db ]
+  (reaction (get-in @db [:game :id])))
+
+
 (defn room-query [db [_ id]]
   (reaction (get-in @db [:rooms id])))
 
@@ -69,6 +73,10 @@
 (re-frame/register-sub
  :error
  error-query)
+
+(re-frame/register-sub
+ :game-id
+ game-id-query)
 
 
 (re-frame/register-sub

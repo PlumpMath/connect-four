@@ -1,8 +1,6 @@
 (ns connect-four.views
   (:require-macros  [reagent.ratom  :refer [reaction]])
   (:require
-   [clairvoyant.core :refer-macros [trace-forms]]
-   [clairvoyant.core :as c]
    [reagent.core :as reagent]
    [re-frame-tracer.core :refer [tracer]]
    [re-frame.core :as re-frame]
@@ -78,6 +76,7 @@
   (let [player (re-frame/subscribe [:player])
         turn   (re-frame/subscribe [:turn])
         winner (re-frame/subscribe [:winner])
+        game-id (re-frame/subscribe [:game-id])
         error  (re-frame/subscribe [:error])]
     (fn player-stats []
       [re-com/v-box
@@ -87,7 +86,12 @@
          :level :level1]
         [re-com/label :label (str "Currnet Player " @player)]
         [re-com/label :label (str "Currnet Turn " @turn)]
-        [re-com/label :label (str "Winner " @winner)]
+        (when (not (nil? @winner))
+          [re-com/label :label (str "Winner " @winner)]
+          [re-com/button :label "delete this game"
+           :on-click #(do 
+                        (accountant/navigate! "/")
+                        (re-frame/dispatch [:delete-room @game-id]))])
         [re-com/label :label (str @error)]]]))
   )
 
@@ -217,9 +221,10 @@
               :children
               [[re-com/button
                 :label "create"
-                :on-click #(re-frame/dispatch [:create-room @new-room-name])]
+                :on-click #(do   (re-frame/dispatch [:create-room @new-room-name])
+                                 (reset! show-panel? false))]
                [re-com/button
-                :label "cancle"
+                :label "cancel"
                 :on-click #(reset! show-panel? false)]]]]]])]])))
 
 (defn rooms-panel []

@@ -61,7 +61,9 @@
                           (fn [[_ new]]
                             (.log js/console  new  )
                             (re-frame/dispatch [:update-game new]))))])
-   (assoc-in db [:game-id] id)))
+   (-> db
+       (dissoc :game) 
+       (assoc-in [:game-id] id))))
 
 (re-frame/register-handler
  :watch-rooms
@@ -88,6 +90,16 @@
      db)))
 
 (re-frame/register-handler
+ :delete-room
+ [check-middleware ]
+ (fn [db [_ id]]
+   (-> db/rooms
+       (m/dissoc-in! [:rooms id] ))
+   (-> db
+       (update-in [:rooms] dissoc id))))
+
+
+(re-frame/register-handler
  :set-active-panel
  (fn [db [_ active-panel]]
    (assoc db :active-panel active-panel)))
@@ -98,7 +110,7 @@
  (fn [game [row col]]
    (let [play-status (game/valid-play? (:board game)
                                   [row col])]
-     (if (and  (= play-status :ok)
+     (if (and  (= play-status "ok")
                (nil? (:winner game)))
        (do
          (re-frame/dispatch [:play row col])
@@ -138,7 +150,7 @@
 
 (re-frame/register-handler
  :play
- [re-frame/debug  game-middleware]
+ [  game-middleware]
  (fn [game [row  col]]
    (re-frame/dispatch [:switch-slot row col])
    (re-frame/dispatch [:end-turn])
