@@ -89,7 +89,7 @@
         (when (not (nil? @winner))
           [re-com/label :label (str "Winner " @winner)]
           [re-com/button :label "delete this game"
-           :on-click #(do 
+           :on-click #(do
                         (accountant/navigate! "/")
                         (re-frame/dispatch [:delete-room @game-id]))])
         [re-com/label :label (str @error)]]]))
