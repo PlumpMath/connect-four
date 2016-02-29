@@ -26,6 +26,10 @@
 (defn game-id-query [db ]
   (reaction (get-in @db [:game :id])))
 
+(defn user-info-query [db ]
+  (reaction (get-in @db [:auth])))
+
+
 
 (defn room-query [db [_ id]]
   (reaction (get-in @db [:rooms id])))
@@ -33,7 +37,8 @@
 (defn rooms-query [db ]
   (reaction (get-in @db [:rooms])))
 
-
+(defn authed? [db]
+  (reaction (not  (nil?  (get-in @db [:auth])))))
 
 (defn user-id-query [db [_ id]]
   (reaction (get-in @db [:user-id])))
@@ -47,6 +52,12 @@
  :room
  room-query)
 
+(re-frame/register-sub
+ :user-info
+ user-info-query)
+
+
+
 
 (re-frame/register-sub
  :rooms
@@ -56,6 +67,12 @@
 (re-frame/register-sub
  :user-id
  user-id-query)
+
+(re-frame/register-sub
+ :authed?
+ authed?)
+
+
 
 
 (re-frame/register-sub

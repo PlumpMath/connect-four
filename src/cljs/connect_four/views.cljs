@@ -116,12 +116,6 @@
               [rooms-link]
               ]])
 
-
-
-(def stub-rooms [  {:name "test room"
-                    :players ["Bob The master"
-                              "Jim The other"]}])
-
 (defn room-name [name]
   [re-com/title :level :level2
    :label name])
@@ -177,7 +171,6 @@
 (defn rooms-list []
   (let [rooms (re-frame/subscribe [:rooms])]
     (fn r-list []
-      (.log js/console @rooms)
       [re-com/v-box
        :size "auto"
        :gap "1em"
@@ -185,25 +178,17 @@
                      [room-panel :room-id id ]) ])))
 
 (defn actions-panel []
-  (let [current-name (re-frame/subscribe [:user-id])
-        show-panel? (reagent/atom false)
+  (let [show-panel? (reagent/atom false)
         new-room-name (reagent/atom "")
-        input-model (reagent/atom @current-name)]
+        user-info   (re-frame/subscribe [:user-info])]
     (fn actions []
       [re-com/v-box
        :children
        [
         [re-com/h-box
          :children [[re-com/label
-                     :label  "Name"]
-                    [re-com/input-text
-                     :model input-model
-                     :on-change #(reset! input-model %)
-                     ]
-                    [re-com/button
-                     :label "Save"
-                     :on-click #(re-frame/dispatch
-                                 [:update-user-id @input-model])]]]
+                     :label  (str  "Name: " ( get-in @user-info [:github :displayName]))]
+                    ]]
         [re-com/button :label "create game"
          :on-click #(reset! show-panel? true)]
         (when @show-panel? 
@@ -266,11 +251,19 @@
 (defmethod panels :rooms-panel [] [rooms-panel])
 (defmethod panels :default [] [:div])
 
+(defn wait-for-auth []
+  [re-com/title
+    :level :level1
+    :label "LOGGING IN"])
+
 (defn main-panel []
-  (let [active-panel (re-frame/subscribe [:active-panel])]
-    (fn []
-      [re-com/v-box
-       :height "100%"
-       :children [(panels @active-panel)]])))
+  (let [active-panel (re-frame/subscribe [:active-panel])
+        authed? (re-frame/subscribe [:authed?])]
+    (fn main []
+      (if @authed?
+        [re-com/v-box
+         :height "100%"
+         :children [(panels @active-panel)]]
+        [wait-for-auth]))))
 
 

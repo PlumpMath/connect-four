@@ -40,13 +40,22 @@
    (re-frame/dispatch [:watch-rooms])
    db/default-db))
 
+
 (re-frame/register-handler
  :connect-firebase
  check-middleware
  (fn [db [_ id]]
-   (m/auth-info db/rooms)
-   db
-   ))
+   (.authWithOAuthPopup connect-four.db/rooms "github"
+                        #(re-frame/dispatch [:auth-finished %2]))
+   db))
+
+
+(re-frame/register-handler
+ :auth-finished
+ check-middleware
+ (fn [db [_ auth]]
+   (assoc  db :auth (js->clj   auth :keywordize-keys true))))
+
 
 (re-frame/register-handler
  :join-game
@@ -54,15 +63,14 @@
  (fn [db [_ id]]
    (-> db/rooms
        (m/merge-in! [ :rooms (keyword  id) :players ]  [  (get-in db [:user-id])]))
-   (let [ disconn 
+   (let [disconn
          (-> db/rooms
              (m/get-in [:rooms (keyword  id) :game])
              (m/listen-to :value
                           (fn [[_ new]]
-                            (.log js/console  new  )
                             (re-frame/dispatch [:update-game new]))))])
    (-> db
-       (dissoc :game) 
+       (dissoc :game)
        (assoc-in [:game-id] id))))
 
 (re-frame/register-handler
@@ -144,7 +152,6 @@
                     (assoc acc (str  (:id r)) r))
                   {}
                   new)] 
-     (.log js/console (assoc  db :rooms munged))
      (assoc-in db [:rooms] munged))))
 
 

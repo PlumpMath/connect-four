@@ -14,8 +14,7 @@
 (when config/debug?
   (println "dev mode")
   (devtools/enable-feature! :sanity-hints :dirac)
-  (devtools/install!)
-  )
+  (devtools/install!))
 
 (defn mount-root []
   (reagent/render [views/main-panel]
