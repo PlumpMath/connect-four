@@ -117,10 +117,3 @@
 (s/def default-db :- AppState
   {:active-panel :home-panel
    :user-id "Test"})
-
-(s/def default-rooms :- RoomsState
-  {:rooms {"0"
-           {:name "a Room"
-            :id  "0"
-            :game (empty-game "0")
-            :players ["you" "me"]}}})

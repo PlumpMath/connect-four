@@ -241,7 +241,6 @@
    :gap "1em"
    :children [[about-title] [link-to-home-page]]])
 
-
 ;; main
 
 (defmulti panels identity)
